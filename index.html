@@ -46,6 +46,7 @@ th{background:#f5f9fd}
 #recordForm{display:none;border-top:1px solid #e2e8f0;margin-top:15px;padding-top:12px}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
 .toolbar button{flex:1}
+#recordForm{display:none}
 footer{text-align:center;color:#718096;padding:20px;font-size:12px}
 @media(min-width:650px){
 .stats{grid-template-columns:repeat(4,1fr)}
@@ -181,7 +182,7 @@ const schemas = {
   ["payment_due_date","Payment Due Date","date"]
  ],
  activity_log:[
-  ["date","Date","date"],
+  ["activity_date","Date","date"],
   ["client_name","Client Name","text"],
   ["activity","Activity","text"],
   ["description","Description","textarea"]
@@ -375,7 +376,7 @@ function buildForm(record={}){
   input.name=name;
   input.value=valueText(record[name]);
 
-  if(activeTable==="activity_log"&&name==="date"&&!record[name]){
+  if(activeTable==="activity_log"&&name==="activity_date"&&!record[name]){
    input.value=new Date().toISOString().slice(0,10);
   }
 
@@ -699,5 +700,5 @@ if("serviceWorker" in navigator){
 startApp();
 </script>
 </body>
-  </html>
+                                                                       </html>
   
