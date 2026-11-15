@@ -1,91 +1,274 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PixelForge AI Manager</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,sans-serif;background:#f2f7fc;color:#172b4d}
-header{background:#102b50;color:white;padding:22px}
+header{background:#102b50;color:white;padding:20px}
 header h1{margin:0;font-size:23px}
-header p{margin:7px 0 0;color:#b9d9f5;font-size:13px}
-main{max-width:1000px;margin:auto;padding:20px}
-.welcome{margin-bottom:20px}
-.welcome h2{margin-bottom:5px}
-.welcome p{color:#63758b}
-.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.stat,.panel{background:white;border-radius:12px;padding:17px;border:1px solid #e0eaf4}
+header p{color:#b9d9f5;font-size:13px}
+main{max-width:1000px;margin:auto;padding:18px}
+.panel,.stat{background:white;border:1px solid #e0eaf4;border-radius:12px;padding:17px;margin-bottom:14px}
+input,button{padding:12px;border-radius:8px;font-size:15px}
+input{width:100%;border:1px solid #cbd5e1;margin:7px 0}
+button{border:0;background:#1686d9;color:white;font-weight:bold;cursor:pointer}
+nav{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:18px 0}
+nav button{background:white;color:#17436e;border:1px solid #d9e8f6}
+nav button.active{background:#1686d9;color:white}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .stat small{color:#64748b}
-.stat h2{color:#1686d9;margin:10px 0 0;font-size:27px}
-nav{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:20px 0}
-nav button{border:1px solid #d9e8f6;background:white;color:#17436e;border-radius:10px;padding:15px 8px;font-size:14px;font-weight:bold}
-nav button.active,nav button:active{background:#1686d9;color:white}
-.panel h3{margin-top:0}
-.panel p{color:#64748b;line-height:1.5}
-.tag{display:inline-block;background:#e4f3ff;color:#0874bd;padding:6px 10px;border-radius:20px;font-size:12px}
-footer{text-align:center;color:#718096;padding:25px;font-size:12px}
+.stat h2{color:#1686d9;margin-bottom:0}
+#app{display:none}
+#login{max-width:450px;margin:35px auto}
+#message{color:#b42318;font-size:14px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:10px;border-bottom:1px solid #e2e8f0;overflow-wrap:anywhere}
+.table-wrap{overflow-x:auto}
+footer{text-align:center;color:#718096;padding:20px;font-size:12px}
 @media(min-width:650px){
 .stats{grid-template-columns:repeat(4,1fr)}
-nav{grid-template-columns:repeat(3,1fr)}
+nav{grid-template-columns:repeat(4,1fr)}
 }
 </style>
 </head>
 <body>
+
 <header>
 <h1>PixelForgeStudio</h1>
 <p>AI Manager · Creativity Meets Precision</p>
 </header>
+
 <main>
-<section class="welcome">
-<h2>Studio Dashboard</h2>
-<p>Your creative business, organised in one place.</p>
-<span class="tag">Dashboard prototype</span>
+<section id="login" class="panel">
+<h2>Studio Login</h2>
+<p>Sign in to access your private dashboard.</p>
+<form id="loginForm">
+<input id="email" type="email" placeholder="Studio email" required>
+<input id="password" type="password" placeholder="Password" required>
+<button type="submit">Sign In</button>
+</form>
+<p id="message"></p>
 </section>
 
+<section id="app">
+<div class="panel">
+<h2>Studio Dashboard</h2>
+<p>Welcome to your private workspace.</p>
+<button id="logout">Log Out</button>
+</div>
+
 <section class="stats">
-<div class="stat"><small>Client Records</small><h2>6</h2></div>
-<div class="stat"><small>Projects</small><h2>0</h2></div>
-<div class="stat"><small>Tasks</small><h2>0</h2></div>
-<div class="stat"><small>Follow-ups Found</small><h2>1</h2></div>
+<div class="stat"><small>Clients</small><h2 id="clientCount">0</h2></div>
+<div class="stat"><small>Projects</small><h2 id="projectCount">0</h2></div>
+<div class="stat"><small>Tasks</small><h2 id="taskCount">0</h2></div>
+<div class="stat"><small>Finance Records</small><h2 id="financeCount">0</h2></div>
 </section>
 
 <nav id="menu">
-<button class="active" onclick="show('overview',this)">Overview</button>
-<button onclick="show('clients',this)">Client Manager</button>
-<button onclick="show('projects',this)">Project Manager</button>
-<button onclick="show('tasks',this)">Task Manager</button>
-<button onclick="show('finance',this)">Finance Manager</button>
-<button onclick="show('activity',this)">Activity Log</button>
-<button onclick="show('reports',this)">Reports</button>
+<button class="active" data-table="overview">Overview</button>
+<button data-table="clients">Clients</button>
+<button data-table="projects">Projects</button>
+<button data-table="tasks">Tasks</button>
+<button data-table="finance">Finance</button>
+<button data-table="activity_log">Activity Log</button>
 </nav>
 
-<section class="panel" id="content">
-<h3>Welcome to PixelForge AI Manager</h3>
-<p>Your central workspace for managing clients, projects, tasks, finances and studio activity.</p>
-<p><b>Next:</b> Connect your Google Sheets database and n8n workflows.</p>
+<section class="panel">
+<h3 id="sectionTitle">Overview</h3>
+<p id="sectionMessage">Your studio records will appear here.</p>
+<div class="table-wrap">
+<table>
+<thead id="tableHead"></thead>
+<tbody id="tableBody"></tbody>
+</table>
+</div>
+</section>
 </section>
 </main>
 
 <footer>PixelForgeStudio · Creativity Meets Precision</footer>
 
 <script>
-const sections={
-overview:["Welcome to PixelForge AI Manager","Your central workspace for managing clients, projects, tasks, finances and studio activity."],
-clients:["Client Manager","Organise client names, contact details, current status and follow-up dates. Your Clients sheet will be connected here."],
-projects:["Project Manager","Track project names, clients, services, deadlines, prices and deliverable links."],
-tasks:["Task Manager","Organise studio tasks, priorities, due dates and completion status."],
-finance:["Finance Manager","Track agreed amounts, payments received, balances and payment status. No financial transactions are made here."],
-activity:["Activity Log","Keep a record of client contacts, replies, follow-ups and project progress."],
-reports:["Studio Reports","View client updates, pending follow-ups, active projects, completed tasks and upcoming deadlines."]
+const SUPABASE_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+const SUPABASE_KEY = "sb_publishable_vkuw0JM6wcVKUZ2nAdfgLA_3LGEl7DR";
+
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+const login = document.getElementById("login");
+const app = document.getElementById("app");
+const message = document.getElementById("message");
+
+const titles = {
+  overview: "Overview",
+  clients: "Client Manager",
+  projects: "Project Manager",
+  tasks: "Task Manager",
+  finance: "Finance Manager",
+  activity_log: "Activity Log"
 };
 
-function show(section,button){
-document.getElementById("content").innerHTML=
-"<h3>"+sections[section][0]+"</h3><p>"+sections[section][1]+"</p>";
-document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
-button.classList.add("active");
+async function loadDashboard() {
+  const tables = ["clients","projects","tasks","finance"];
+
+  for (const table of tables) {
+    const { count, error } = await db
+      .from(table)
+      .select("*", { count: "exact", head: true });
+
+    if (error) {
+      console.error(error);
+      continue;
+    }
+
+    document.getElementById(
+      table === "clients" ? "clientCount" :
+      table === "projects" ? "projectCount" :
+      table === "tasks" ? "taskCount" : "financeCount"
+    ).textContent = count ?? 0;
+  }
+
+  showSection("overview");
+}
+
+function addCell(row, value) {
+  const cell = document.createElement("td");
+  cell.textContent = value == null ? "" : String(value);
+  row.appendChild(cell);
+}
+
+async function showSection(table) {
+  document.querySelectorAll("nav button").forEach(button => {
+    button.classList.toggle(
+      "active",
+      button.dataset.table === table
+    );
+  });
+
+  document.getElementById("sectionTitle").textContent =
+    titles[table] || "Overview";
+
+  const head = document.getElementById("tableHead");
+  const body = document.getElementById("tableBody");
+  const sectionMessage = document.getElementById("sectionMessage");
+
+  head.replaceChildren();
+  body.replaceChildren();
+
+  if (table === "overview") {
+    sectionMessage.textContent =
+      "Your live database counts are displayed above.";
+    return;
+  }
+
+  sectionMessage.textContent = "Loading records...";
+
+  const { data, error } = await db
+    .from(table)
+    .select("*")
+    .limit(50);
+
+  if (error) {
+    sectionMessage.textContent = "Could not load records: " + error.message;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    sectionMessage.textContent = "No records yet.";
+    return;
+  }
+
+  sectionMessage.textContent =
+    "Showing up to 50 records.";
+
+  const columns = Object.keys(data[0]).filter(
+    key => key !== "owner_id"
+  );
+
+  const headerRow = document.createElement("tr");
+
+  columns.forEach(column => {
+    const th = document.createElement("th");
+    th.textContent = column.replaceAll("_", " ");
+    headerRow.appendChild(th);
+  });
+
+  head.appendChild(headerRow);
+
+  data.forEach(record => {
+    const row = document.createElement("tr");
+    columns.forEach(column => addCell(row, record[column]));
+    body.appendChild(row);
+  });
+}
+
+document.getElementById("loginForm").addEventListener(
+  "submit", async event => {
+    event.preventDefault();
+    message.textContent = "Signing in...";
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    const { error } = await db.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) {
+      message.textContent = error.message;
+    } else {
+      message.textContent = "";
+    }
+  }
+);
+
+document.getElementById("logout").addEventListener(
+  "click", async () => {
+    await db.auth.signOut();
+  }
+);
+
+document.querySelectorAll("nav button").forEach(button => {
+  button.addEventListener("click", () => {
+    showSection(button.dataset.table);
+  });
+});
+
+db.auth.onAuthStateChange((event, session) => {
+  const signedIn = !!session;
+  login.style.display = signedIn ? "none" : "block";
+  app.style.display = signedIn ? "block" : "none";
+
+  if (signedIn) {
+    loadDashboard();
+  }
+});
+
+async function checkSession() {
+  const { data } = await db.auth.getSession();
+
+  if (data.session) {
+    login.style.display = "none";
+    app.style.display = "block";
+    await loadDashboard();
+  }
+}
+
+if (
+  SUPABASE_URL.startsWith("https://") &&
+  SUPABASE_KEY.startsWith("sb_publishable_")
+) {
+  checkSession();
+} else {
+  message.textContent =
+    "Add your Supabase Project URL and Publishable Key in the code first.";
 }
 </script>
 </body>
