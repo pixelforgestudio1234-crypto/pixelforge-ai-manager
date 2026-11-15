@@ -481,9 +481,9 @@ $("dataForm").addEventListener("submit",async event=>{
   if(result.error)throw result.error;
 
   closeForm();
-  notice($("sectionMessage"),"Record saved successfully.",true);
   await loadRecords(activeTable);
   await loadCounts();
+  notice($("sectionMessage"),"Record saved successfully.",true);
 
  }catch(error){
   console.error(error);
@@ -493,32 +493,92 @@ $("dataForm").addEventListener("submit",async event=>{
  }
 });
 
-/* DELETE */
+/* SAFE DELETE */
 async function deleteRecord(record){
+ if(busy)return;
+
  if(record.id===undefined||record.id===null){
   notice($("sectionMessage"),"This table needs an id column.");
   return;
  }
-
- if(!confirm("Are you sure you want to delete this record?"))return;
 
  if(!navigator.onLine){
   notice($("sectionMessage"),"Internet connection required.");
   return;
  }
 
- notice($("sectionMessage"),"Deleting...");
+ let confirmation="Are you sure you want to delete this record?";
 
- const {error}=await db.from(activeTable)
-  .delete().eq("id",record.id);
+ /* SPECIAL SAFETY CHECK FOR CLIENTS */
+ if(activeTable==="clients"){
+  if(!record.client_name){
+   notice($("sectionMessage"),"Client name is missing. Cannot safely check linked projects.");
+   return;
+  }
 
- if(error){
-  notice($("sectionMessage"),"Delete failed: "+error.message);
-  return;
+  notice($("sectionMessage"),"Checking for linked projects...");
+
+  const {data:linkedProjects,error:checkError}=await db
+   .from("projects")
+   .select("client_name")
+   .eq("client_name",record.client_name);
+
+  if(checkError){
+   console.error(checkError);
+   notice($("sectionMessage"),
+    "Could not check linked projects. Client was NOT deleted: "+checkError.message);
+   return;
+  }
+
+  const projectCount=(linkedProjects||[]).length;
+
+  if(projectCount>0){
+   confirmation=
+    "WARNING: "+projectCount+" project(s) are linked to "+
+    record.client_name+".\n\n"+
+    "Deleting this client will NOT delete those projects, tasks, or finance records.\n\n"+
+    "The linked records will remain in your database. You may need to update their client references manually.\n\n"+
+    "Do you still want to delete this client?";
+  }else{
+   confirmation=
+    "No linked projects were found for "+record.client_name+
+    ".\n\nAre you sure you want to delete this client?";
+  }
  }
 
- await loadRecords(activeTable);
- await loadCounts();
+ if(!confirm(confirmation))return;
+
+ busy=true;
+ notice($("sectionMessage"),"Deleting...");
+
+ try{
+  const {data,error}=await db.from(activeTable)
+   .delete()
+   .eq("id",record.id)
+   .select("id");
+
+  if(error)throw error;
+
+  if(!data||data.length===0){
+   throw new Error("No record was deleted. Check your permissions or ownership.");
+  }
+
+  await loadRecords(activeTable);
+  await loadCounts();
+
+  notice($("sectionMessage"),
+   activeTable==="clients"
+    ?"Client deleted successfully. Related records were not deleted."
+    :"Record deleted successfully.",
+   true
+  );
+
+ }catch(error){
+  console.error(error);
+  notice($("sectionMessage"),"Delete failed: "+error.message);
+ }finally{
+  busy=false;
+ }
 }
 
 /* LOGIN */
@@ -549,7 +609,6 @@ $("loginForm").addEventListener("submit",async event=>{
   if(error)throw error;
   if(!data.session||!data.user)throw new Error("No login session was returned.");
 
-  /* Explicitly open the dashboard after successful login. */
   showApp(data.user);
   notice($("message"),"");
   await loadCounts();
@@ -592,9 +651,7 @@ document.querySelectorAll("#menu button").forEach(button=>{
  button.addEventListener("click",()=>showSection(button.dataset.table));
 });
 
-/* AUTH LISTENER
-   Do not run database queries inside this callback.
-*/
+/* AUTH LISTENER */
 db?.auth.onAuthStateChange((event,session)=>{
  if(event==="SIGNED_OUT"){
   currentUser=null;
@@ -642,4 +699,5 @@ if("serviceWorker" in navigator){
 startApp();
 </script>
 </body>
-</html>
+  </html>
+  
