@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PixelForge AI Manager</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f2f7fc;color:#172b4d}
+header{background:#102b50;color:white;padding:22px}
+header h1{margin:0;font-size:23px}
+header p{margin:7px 0 0;color:#b9d9f5;font-size:13px}
+main{max-width:1000px;margin:auto;padding:20px}
+.welcome{margin-bottom:20px}
+.welcome h2{margin-bottom:5px}
+.welcome p{color:#63758b}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.stat,.panel{background:white;border-radius:12px;padding:17px;border:1px solid #e0eaf4}
+.stat small{color:#64748b}
+.stat h2{color:#1686d9;margin:10px 0 0;font-size:27px}
+nav{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:20px 0}
+nav button{border:1px solid #d9e8f6;background:white;color:#17436e;border-radius:10px;padding:15px 8px;font-size:14px;font-weight:bold}
+nav button.active,nav button:active{background:#1686d9;color:white}
+.panel h3{margin-top:0}
+.panel p{color:#64748b;line-height:1.5}
+.tag{display:inline-block;background:#e4f3ff;color:#0874bd;padding:6px 10px;border-radius:20px;font-size:12px}
+footer{text-align:center;color:#718096;padding:25px;font-size:12px}
+@media(min-width:650px){
+.stats{grid-template-columns:repeat(4,1fr)}
+nav{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+<header>
+<h1>PixelForgeStudio</h1>
+<p>AI Manager · Creativity Meets Precision</p>
+</header>
+<main>
+<section class="welcome">
+<h2>Studio Dashboard</h2>
+<p>Your creative business, organised in one place.</p>
+<span class="tag">Dashboard prototype</span>
+</section>
+
+<section class="stats">
+<div class="stat"><small>Client Records</small><h2>6</h2></div>
+<div class="stat"><small>Projects</small><h2>0</h2></div>
+<div class="stat"><small>Tasks</small><h2>0</h2></div>
+<div class="stat"><small>Follow-ups Found</small><h2>1</h2></div>
+</section>
+
+<nav id="menu">
+<button class="active" onclick="show('overview',this)">Overview</button>
+<button onclick="show('clients',this)">Client Manager</button>
+<button onclick="show('projects',this)">Project Manager</button>
+<button onclick="show('tasks',this)">Task Manager</button>
+<button onclick="show('finance',this)">Finance Manager</button>
+<button onclick="show('activity',this)">Activity Log</button>
+<button onclick="show('reports',this)">Reports</button>
+</nav>
+
+<section class="panel" id="content">
+<h3>Welcome to PixelForge AI Manager</h3>
+<p>Your central workspace for managing clients, projects, tasks, finances and studio activity.</p>
+<p><b>Next:</b> Connect your Google Sheets database and n8n workflows.</p>
+</section>
+</main>
+
+<footer>PixelForgeStudio · Creativity Meets Precision</footer>
+
+<script>
+const sections={
+overview:["Welcome to PixelForge AI Manager","Your central workspace for managing clients, projects, tasks, finances and studio activity."],
+clients:["Client Manager","Organise client names, contact details, current status and follow-up dates. Your Clients sheet will be connected here."],
+projects:["Project Manager","Track project names, clients, services, deadlines, prices and deliverable links."],
+tasks:["Task Manager","Organise studio tasks, priorities, due dates and completion status."],
+finance:["Finance Manager","Track agreed amounts, payments received, balances and payment status. No financial transactions are made here."],
+activity:["Activity Log","Keep a record of client contacts, replies, follow-ups and project progress."],
+reports:["Studio Reports","View client updates, pending follow-ups, active projects, completed tasks and upcoming deadlines."]
+};
+
+function show(section,button){
+document.getElementById("content").innerHTML=
+"<h3>"+sections[section][0]+"</h3><p>"+sections[section][1]+"</p>";
+document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+button.classList.add("active");
+}
+</script>
+</body>
+</html>
