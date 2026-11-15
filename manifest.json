@@ -1,0 +1,12 @@
+
+{
+  "name": "PixelForge AI Manager",
+  "short_name": "PixelForge",
+  "description": "PixelForgeStudio business management app",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f1f6fc",
+  "theme_color": "#102b50",
+  "orientation": "portrait"
+}
