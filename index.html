@@ -3,12 +3,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#102b50">
-<meta name="description" content="PixelForgeStudio business management dashboard">
+<meta name="description" content="PixelForgeStudio AI Manager">
 <link rel="manifest" href="./manifest.json">
 <title>PixelForge AI Manager</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
@@ -16,27 +15,27 @@
 body{margin:0;font-family:Arial,sans-serif;background:#f2f7fc;color:#172b4d}
 header{background:#102b50;color:white;padding:20px}
 header h1{margin:0;font-size:23px}
-header p{color:#b9d9f5;font-size:13px;margin-bottom:0}
+header p{color:#b9d9f5;font-size:13px}
 main{max-width:1100px;margin:auto;padding:16px}
 .panel,.stat{background:white;border:1px solid #e0eaf4;border-radius:13px;padding:16px;margin-bottom:14px}
 input,select,textarea,button{font:inherit;padding:11px;border-radius:8px}
 input,select,textarea{width:100%;border:1px solid #cbd5e1;margin:5px 0 12px;background:white;color:#172b4d}
-textarea{min-height:75px;resize:vertical}
+textarea{min-height:75px}
 button{border:0;background:#1686d9;color:white;font-weight:bold;cursor:pointer}
-button:disabled{opacity:.55;cursor:not-allowed}
-button.secondary{background:#e8f2fb;color:#17436e}
-button.danger{background:#b42318}
-button.small{padding:7px 10px;font-size:12px;margin:2px}
+button:disabled{opacity:.55}
+.secondary{background:#e8f2fb;color:#17436e}
+.danger{background:#b42318}
+.small{padding:7px 10px;font-size:12px;margin:2px}
 nav{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:16px 0}
 nav button{background:white;color:#17436e;border:1px solid #d9e8f6}
 nav button.active{background:#1686d9;color:white}
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .stat small{color:#64748b}
-.stat h2{color:#1686d9;margin:7px 0 0;font-size:25px}
+.stat h2{color:#1686d9;margin:7px 0 0}
 #app{display:none}
 #login{max-width:450px;margin:35px auto}
 #message,.message{font-size:14px;color:#b42318;overflow-wrap:anywhere}
-.success{color:#147a42}
+.success{color:#147a42!important}
 .muted{color:#64748b;font-size:13px}
 .table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13px;min-width:600px}
@@ -47,91 +46,90 @@ th{background:#f5f9fd}
 #recordForm{display:none;border-top:1px solid #e2e8f0;margin-top:15px;padding-top:12px}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
 .toolbar button{flex:1}
-.badge{display:inline-block;padding:4px 8px;border-radius:20px;background:#e8f2fb;color:#17436e;font-size:12px}
 footer{text-align:center;color:#718096;padding:20px;font-size:12px}
 @media(min-width:650px){
 .stats{grid-template-columns:repeat(4,1fr)}
 nav{grid-template-columns:repeat(3,1fr)}
-.form-grid{grid-template-columns:repeat(2,1fr);column-gap:12px}
+.form-grid{grid-template-columns:repeat(2,1fr);gap:12px}
 }
 </style>
 </head>
 
 <body>
 <header>
-  <h1>PixelForgeStudio</h1>
-  <p>AI Manager · Creativity Meets Precision</p>
+<h1>PixelForgeStudio</h1>
+<p>AI Manager · Creativity Meets Precision</p>
 </header>
 
 <main>
-  <section id="login" class="panel">
-    <h2>Studio Login</h2>
-    <p>Sign in to access your private workspace.</p>
-    <form id="loginForm">
-      <label for="email">Studio email</label>
-      <input id="email" type="email" autocomplete="username" required>
-      <label for="password">Password</label>
-      <input id="password" type="password" autocomplete="current-password" required>
-      <button id="loginButton" type="submit">Sign In</button>
-    </form>
-    <p id="message" role="status"></p>
-  </section>
+<section id="login" class="panel">
+<h2>Studio Login</h2>
+<p>Sign in to access your private workspace.</p>
+<form id="loginForm">
+<label for="email">Studio email</label>
+<input id="email" type="email" autocomplete="username" required>
+<label for="password">Password</label>
+<input id="password" type="password" autocomplete="current-password" required>
+<button id="loginButton" type="submit">Sign In</button>
+</form>
+<p id="message" role="status"></p>
+</section>
 
-  <section id="app">
-    <section class="panel">
-      <h2>Studio Dashboard</h2>
-      <p id="welcome" class="muted">Your business workspace.</p>
-      <div class="toolbar">
-        <button class="secondary" id="refreshButton">Refresh Data</button>
-        <button class="danger" id="logoutButton">Log Out</button>
-      </div>
-      <p id="connectionStatus" class="muted">Checking connection...</p>
-    </section>
+<section id="app">
+<div class="panel">
+<h2>Studio Dashboard</h2>
+<p id="welcome" class="muted">Your business workspace.</p>
+<div class="toolbar">
+<button class="secondary" id="refreshButton">Refresh Data</button>
+<button class="danger" id="logoutButton">Log Out</button>
+</div>
+<p id="connectionStatus" class="muted"></p>
+</div>
 
-    <section class="stats">
-      <div class="stat"><small>Clients</small><h2 id="clientCount">—</h2></div>
-      <div class="stat"><small>Projects</small><h2 id="projectCount">—</h2></div>
-      <div class="stat"><small>Tasks</small><h2 id="taskCount">—</h2></div>
-      <div class="stat"><small>Finance Records</small><h2 id="financeCount">—</h2></div>
-    </section>
+<section class="stats">
+<div class="stat"><small>Clients</small><h2 id="clientCount">—</h2></div>
+<div class="stat"><small>Projects</small><h2 id="projectCount">—</h2></div>
+<div class="stat"><small>Tasks</small><h2 id="taskCount">—</h2></div>
+<div class="stat"><small>Finance Records</small><h2 id="financeCount">—</h2></div>
+</section>
 
-    <nav id="menu">
-      <button class="active" data-table="overview">Overview</button>
-      <button data-table="clients">Clients</button>
-      <button data-table="projects">Projects</button>
-      <button data-table="tasks">Tasks</button>
-      <button data-table="finance">Finance</button>
-      <button data-table="activity_log">Activity Log</button>
-    </nav>
+<nav id="menu">
+<button class="active" data-table="overview">Overview</button>
+<button data-table="clients">Clients</button>
+<button data-table="projects">Projects</button>
+<button data-table="tasks">Tasks</button>
+<button data-table="finance">Finance</button>
+<button data-table="activity_log">Activity Log</button>
+</nav>
 
-    <section class="panel">
-      <h3 id="sectionTitle">Overview</h3>
-      <p id="sectionMessage" class="muted">Your studio records will appear here.</p>
+<section class="panel">
+<h3 id="sectionTitle">Overview</h3>
+<p id="sectionMessage" class="muted">Your studio records will appear here.</p>
 
-      <div id="sectionToolbar" class="toolbar" style="display:none">
-        <button id="addButton">+ Add Record</button>
-      </div>
+<div id="sectionToolbar" class="toolbar" style="display:none">
+<button id="addButton">+ Add Record</button>
+</div>
 
-      <div id="recordForm">
-        <h3 id="formTitle">Add Record</h3>
-        <form id="dataForm">
-          <div id="formFields" class="form-grid"></div>
-          <div class="toolbar">
-            <button id="saveButton" type="submit">Save Record</button>
-            <button id="cancelButton" class="secondary" type="button">Cancel</button>
-          </div>
-          <p id="formMessage" class="message" role="status"></p>
-        </form>
-      </div>
+<div id="recordForm">
+<h3 id="formTitle">Add Record</h3>
+<form id="dataForm">
+<div id="formFields" class="form-grid"></div>
+<div class="toolbar">
+<button id="saveButton" type="submit">Save Record</button>
+<button id="cancelButton" class="secondary" type="button">Cancel</button>
+</div>
+<p id="formMessage" class="message" role="status"></p>
+</form>
+</div>
 
-      <div class="table-wrap">
-        <table>
-          <thead id="tableHead"></thead>
-          <tbody id="tableBody"></tbody>
-        </table>
-      </div>
-    </section>
-  </section>
+<div class="table-wrap">
+<table>
+<thead id="tableHead"></thead>
+<tbody id="tableBody"></tbody>
+</table>
+</div>
+</section>
+</section>
 </main>
 
 <footer>PixelForgeStudio · Creativity Meets Precision</footer>
@@ -139,505 +137,509 @@ nav{grid-template-columns:repeat(3,1fr)}
 <script>
 "use strict";
 
-/* --------------------------------------------------
-   SUPABASE CONNECTION
-   This must be your Supabase project URL,
-   NOT your GitHub Pages website URL.
--------------------------------------------------- */
-
+/* SUPABASE SETTINGS */
 const SUPABASE_URL = "https://kfvzvjwasnmabjffqrsi.supabase.co";
 const SUPABASE_KEY = "sb_publishable_vkuw0JM6wcVKUZ2nAdfgLA_3LGEl7DR";
 
 const db = window.supabase
-  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+  ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
   : null;
 
-/* --------------------------------------------------
-   TABLE CONFIGURATION
-   These field names follow your existing tracker.
--------------------------------------------------- */
-
+/* DATABASE FIELDS */
 const schemas = {
-  clients: [
-    ["client_name","Client Name","text"],
-    ["status","Status","text"],
-    ["contacted_date","Contacted Date","date"],
-    ["follow_up_date","Follow-up Date","date"],
-    ["notes","Notes","textarea"]
-  ],
-  projects: [
-    ["project_name","Project Name","text"],
-    ["client_name","Client Name","text"],
-    ["service","Service","text"],
-    ["start_date","Start Date","date"],
-    ["deadline","Deadline","date"],
-    ["project_status","Project Status","text"],
-    ["agreed_price","Agreed Price","number"],
-    ["deliverable_link","Deliverable Link","url"]
-  ],
-  tasks: [
-    ["task_name","Task Name","text"],
-    ["related_project","Related Project","text"],
-    ["priority","Priority","text"],
-    ["due_date","Due Date","date"],
-    ["status","Status","text"],
-    ["completion_date","Completion Date","date"]
-  ],
-  finance: [
-    ["project_name","Project Name","text"],
-    ["agreed_amount","Agreed Amount","number"],
-    ["amount_received","Amount Received","number"],
-    ["remaining_balance","Remaining Balance","number"],
-    ["payment_status","Payment Status","text"],
-    ["payment_due_date","Payment Due Date","date"]
-  ],
-  activity_log: [
-    ["date","Date","date"],
-    ["client_name","Client Name","text"],
-    ["activity","Activity","text"],
-    ["description","Description","textarea"]
-  ]
+ clients:[
+  ["client_name","Client Name","text"],
+  ["status","Status","text"],
+  ["contacted_date","Contacted Date","date"],
+  ["follow_up_date","Follow-up Date","date"],
+  ["notes","Notes","textarea"]
+ ],
+ projects:[
+  ["project_name","Project Name","text"],
+  ["client_name","Client Name","text"],
+  ["service","Service","text"],
+  ["start_date","Start Date","date"],
+  ["deadline","Deadline","date"],
+  ["project_status","Project Status","text"],
+  ["agreed_price","Agreed Price","number"],
+  ["deliverable_link","Deliverable Link","url"]
+ ],
+ tasks:[
+  ["task_name","Task Name","text"],
+  ["related_project","Related Project","text"],
+  ["priority","Priority","text"],
+  ["due_date","Due Date","date"],
+  ["status","Status","text"],
+  ["completion_date","Completion Date","date"]
+ ],
+ finance:[
+  ["project_name","Project Name","text"],
+  ["agreed_amount","Agreed Amount","number"],
+  ["amount_received","Amount Received","number"],
+  ["remaining_balance","Remaining Balance","number"],
+  ["payment_status","Payment Status","text"],
+  ["payment_due_date","Payment Due Date","date"]
+ ],
+ activity_log:[
+  ["date","Date","date"],
+  ["client_name","Client Name","text"],
+  ["activity","Activity","text"],
+  ["description","Description","textarea"]
+ ]
 };
 
-const titles = {
-  overview:"Overview",
-  clients:"Client Manager",
-  projects:"Project Manager",
-  tasks:"Task Manager",
-  finance:"Finance Manager",
-  activity_log:"Activity Log"
+const titles={
+ overview:"Overview",
+ clients:"Client Manager",
+ projects:"Project Manager",
+ tasks:"Task Manager",
+ finance:"Finance Manager",
+ activity_log:"Activity Log"
 };
 
-const loginPanel = document.getElementById("login");
-const appPanel = document.getElementById("app");
-const message = document.getElementById("message");
-const sectionMessage = document.getElementById("sectionMessage");
-const formMessage = document.getElementById("formMessage");
+const $ = id => document.getElementById(id);
 
-let currentUser = null;
-let activeTable = "overview";
-let currentRecords = [];
-let editingId = null;
-let busy = false;
+let currentUser=null;
+let activeTable="overview";
+let currentRecords=[];
+let editingId=null;
+let busy=false;
 
-function setMessage(element, text, success=false) {
-  element.textContent = text;
-  element.classList.toggle("success", success);
+function notice(element,text,success=false){
+ element.textContent=text;
+ element.classList.toggle("success",success);
 }
 
-function setBusy(value) {
-  busy = value;
-  document.getElementById("saveButton").disabled = value;
-  document.getElementById("loginButton").disabled = value;
+function showLogin(){
+ $("login").style.display="block";
+ $("app").style.display="none";
 }
 
-function showLogin() {
-  loginPanel.style.display = "block";
-  appPanel.style.display = "none";
+function showApp(user){
+ currentUser=user;
+ $("login").style.display="none";
+ $("app").style.display="block";
+ $("welcome").textContent="Signed in as "+(user.email||"Studio User");
+ updateConnection();
 }
 
-function showApp(user) {
-  currentUser = user;
-  loginPanel.style.display = "none";
-  appPanel.style.display = "block";
-  document.getElementById("welcome").textContent =
-    "Signed in as " + (user.email || "Studio User");
-  document.getElementById("connectionStatus").textContent =
-    navigator.onLine ? "Online · Connected to your workspace" :
-    "Offline · Live database changes are unavailable";
+function updateConnection(){
+ $("connectionStatus").textContent=navigator.onLine
+  ?"Online · Live database connection available"
+  :"Offline · Live database changes unavailable";
 }
 
-function safeValue(value) {
-  return value === null || value === undefined ? "" : String(value);
+function setBusy(value){
+ busy=value;
+ $("loginButton").disabled=value;
+ $("saveButton").disabled=value;
 }
 
-function makeCell(row, value) {
-  const cell = document.createElement("td");
-  cell.textContent = safeValue(value);
-  row.appendChild(cell);
+function valueText(value){
+ return value===null||value===undefined?"":String(value);
 }
 
-function makeHeader(columns) {
-  const head = document.getElementById("tableHead");
-  head.replaceChildren();
+/* DASHBOARD COUNTS */
+async function loadCounts(){
+ if(!currentUser)return;
 
-  const row = document.createElement("tr");
-  columns.forEach(column => {
-    const th = document.createElement("th");
-    th.textContent = column;
-    row.appendChild(th);
-  });
-  head.appendChild(row);
-}
+ const items=[
+  ["clients","clientCount"],
+  ["projects","projectCount"],
+  ["tasks","taskCount"],
+  ["finance","financeCount"]
+ ];
 
-function getVisibleColumns(record) {
-  return Object.keys(record).filter(key =>
-    !["owner_id","created_at","updated_at"].includes(key)
-  );
-}
+ for(const [table,id] of items){
+  const {count,error}=await db.from(table)
+   .select("*",{count:"exact",head:true});
 
-/* --------------------------------------------------
-   DASHBOARD COUNTS
--------------------------------------------------- */
-
-async function loadCounts() {
-  const countTables = ["clients","projects","tasks","finance"];
-
-  for (const table of countTables) {
-    const elementId = {
-      clients:"clientCount",
-      projects:"projectCount",
-      tasks:"taskCount",
-      finance:"financeCount"
-    }[table];
-
-    const { count, error } = await db
-      .from(table)
-      .select("*", { count:"exact", head:true });
-
-    if (error) {
-      console.error("Count error:", table, error);
-      document.getElementById(elementId).textContent = "!";
-    } else {
-      document.getElementById(elementId).textContent = count ?? 0;
-    }
+  if(error){
+   console.error(table,error);
+   $(id).textContent="!";
+  }else{
+   $(id).textContent=count??0;
   }
+ }
 }
 
-/* --------------------------------------------------
-   LOAD TABLE RECORDS
--------------------------------------------------- */
+/* TABLE DISPLAY */
+function drawHeader(columns){
+ const row=document.createElement("tr");
+ columns.forEach(column=>{
+  const th=document.createElement("th");
+  th.textContent=column;
+  row.appendChild(th);
+ });
+ $("tableHead").replaceChildren(row);
+}
 
-async function loadRecords(table) {
-  if (!currentUser || !db) return;
+async function loadRecords(table){
+ if(!currentUser)return;
 
-  sectionMessage.textContent = "Loading records...";
-  document.getElementById("tableBody").replaceChildren();
-  document.getElementById("tableHead").replaceChildren();
+ notice($("sectionMessage"),"Loading records...");
+ $("tableHead").replaceChildren();
+ $("tableBody").replaceChildren();
 
-  const { data, error } = await db
-    .from(table)
-    .select("*")
-    .limit(100);
+ const {data,error}=await db.from(table).select("*").limit(100);
 
-  if (error) {
-    console.error("Load error:", error);
-    sectionMessage.textContent =
-      "Could not load records: " + error.message;
-    return;
-  }
+ if(error){
+  console.error(error);
+  notice($("sectionMessage"),"Could not load records: "+error.message);
+  return;
+ }
 
-  currentRecords = data || [];
+ currentRecords=data||[];
 
-  if (currentRecords.length === 0) {
-    sectionMessage.textContent =
-      "No records yet. Use Add Record to create your first one.";
-    return;
-  }
+ if(currentRecords.length===0){
+  notice($("sectionMessage"),"No records yet. Select Add Record to create one.");
+  return;
+ }
 
-  const columns = getVisibleColumns(currentRecords[0]);
-  makeHeader([...columns.map(c => c.replaceAll("_"," ")), "Actions"]);
+ const columns=Object.keys(currentRecords[0])
+  .filter(key=>!["owner_id","created_at","updated_at"].includes(key));
 
-  const body = document.getElementById("tableBody");
-  body.replaceChildren();
+ drawHeader([...columns.map(x=>x.replaceAll("_"," ")),"Actions"]);
 
-  currentRecords.forEach(record => {
-    const row = document.createElement("tr");
+ currentRecords.forEach(record=>{
+  const row=document.createElement("tr");
 
-    columns.forEach(column => makeCell(row, record[column]));
-
-    const actions = document.createElement("td");
-    actions.className = "actions";
-
-    const edit = document.createElement("button");
-    edit.className = "small secondary";
-    edit.textContent = "Edit";
-    edit.addEventListener("click", () => openEditForm(record));
-
-    const remove = document.createElement("button");
-    remove.className = "small danger";
-    remove.textContent = "Delete";
-    remove.addEventListener("click", () => deleteRecord(record));
-
-    actions.append(edit, remove);
-    row.appendChild(actions);
-    body.appendChild(row);
+  columns.forEach(column=>{
+   const td=document.createElement("td");
+   td.textContent=valueText(record[column]);
+   row.appendChild(td);
   });
 
-  sectionMessage.textContent =
-    "Showing " + currentRecords.length + " record(s), up to 100.";
+  const actions=document.createElement("td");
+  actions.className="actions";
+
+  const edit=document.createElement("button");
+  edit.className="small secondary";
+  edit.textContent="Edit";
+  edit.onclick=()=>openEditForm(record);
+
+  const del=document.createElement("button");
+  del.className="small danger";
+  del.textContent="Delete";
+  del.onclick=()=>deleteRecord(record);
+
+  actions.append(edit,del);
+  row.appendChild(actions);
+  $("tableBody").appendChild(row);
+ });
+
+ notice($("sectionMessage"),"Showing "+currentRecords.length+" records.");
 }
 
-/* --------------------------------------------------
-   SECTION NAVIGATION
--------------------------------------------------- */
+/* NAVIGATION */
+async function showSection(table){
+ activeTable=table;
+ editingId=null;
 
-async function showSection(table) {
-  activeTable = table;
-  editingId = null;
+ document.querySelectorAll("#menu button").forEach(button=>{
+  button.classList.toggle("active",button.dataset.table===table);
+ });
 
-  document.querySelectorAll("#menu button").forEach(button => {
-    button.classList.toggle("active", button.dataset.table === table);
+ $("sectionTitle").textContent=titles[table];
+ $("recordForm").style.display="none";
+ $("sectionToolbar").style.display=table==="overview"?"none":"flex";
+
+ if(table==="overview"){
+  $("tableHead").replaceChildren();
+  $("tableBody").replaceChildren();
+  notice($("sectionMessage"),"Your live database counts are displayed above. Choose a section to manage records.");
+  return;
+ }
+
+ await loadRecords(table);
+}
+
+/* BUILD RECORD FORM */
+function buildForm(record={}){
+ const fields=$("formFields");
+ fields.replaceChildren();
+
+ schemas[activeTable].forEach(([name,label,type])=>{
+  const wrapper=document.createElement("div");
+  const fieldLabel=document.createElement("label");
+  fieldLabel.textContent=label;
+  fieldLabel.htmlFor="field_"+name;
+
+  const input=type==="textarea"
+   ?document.createElement("textarea")
+   :document.createElement("input");
+
+  if(type!=="textarea")input.type=type;
+
+  input.id="field_"+name;
+  input.name=name;
+  input.value=valueText(record[name]);
+
+  if(activeTable==="activity_log"&&name==="date"&&!record[name]){
+   input.value=new Date().toISOString().slice(0,10);
+  }
+
+  if(name==="remaining_balance"&&activeTable==="finance"){
+   input.readOnly=true;
+  }
+
+  wrapper.append(fieldLabel,input);
+  fields.appendChild(wrapper);
+ });
+
+ if(activeTable==="finance"){
+  const agreed=$("field_agreed_amount");
+  const received=$("field_amount_received");
+  const remaining=$("field_remaining_balance");
+
+  function calculate(){
+   remaining.value=Math.max(0,Number(agreed.value||0)-Number(received.value||0)).toFixed(2);
+  }
+
+  agreed.addEventListener("input",calculate);
+  received.addEventListener("input",calculate);
+  calculate();
+ }
+}
+
+function openAddForm(){
+ editingId=null;
+ $("formTitle").textContent="Add "+titles[activeTable]+" Record";
+ $("saveButton").textContent="Save Record";
+ buildForm();
+ notice($("formMessage"),"");
+ $("recordForm").style.display="block";
+ $("recordForm").scrollIntoView({behavior:"smooth"});
+}
+
+function openEditForm(record){
+ if(record.id===undefined||record.id===null){
+  notice($("sectionMessage"),"This table needs an id column to edit records.");
+  return;
+ }
+
+ editingId=record.id;
+ $("formTitle").textContent="Edit "+titles[activeTable]+" Record";
+ $("saveButton").textContent="Update Record";
+ buildForm(record);
+ notice($("formMessage"),"");
+ $("recordForm").style.display="block";
+ $("recordForm").scrollIntoView({behavior:"smooth"});
+}
+
+function closeForm(){
+ $("recordForm").style.display="none";
+ $("dataForm").reset();
+ editingId=null;
+}
+
+/* SAVE AND UPDATE */
+$("dataForm").addEventListener("submit",async event=>{
+ event.preventDefault();
+ if(busy)return;
+
+ if(!navigator.onLine){
+  notice($("formMessage"),"Internet connection required to save.");
+  return;
+ }
+
+ setBusy(true);
+ notice($("formMessage"),"Saving...");
+
+ try{
+  const record={};
+
+  schemas[activeTable].forEach(([name])=>{
+   const input=$("field_"+name);
+   let value=input.value.trim();
+   if(value==="")value=null;
+
+   if(["agreed_price","agreed_amount","amount_received","remaining_balance"].includes(name)){
+    value=value===null?null:Number(value);
+   }
+
+   record[name]=value;
   });
 
-  document.getElementById("sectionTitle").textContent =
-    titles[table] || "Overview";
-
-  document.getElementById("recordForm").style.display = "none";
-  document.getElementById("sectionToolbar").style.display =
-    table === "overview" ? "none" : "flex";
-
-  if (table === "overview") {
-    currentRecords = [];
-    document.getElementById("tableHead").replaceChildren();
-    document.getElementById("tableBody").replaceChildren();
-    sectionMessage.textContent =
-      "Your live database counts are displayed above. Choose a section to manage records.";
-    return;
+  if(activeTable==="finance"){
+   record.remaining_balance=Math.max(
+    0,
+    Number(record.agreed_amount||0)-Number(record.amount_received||0)
+   );
   }
 
-  await loadRecords(table);
-}
+  let result;
 
-/* --------------------------------------------------
-   ADD / EDIT FORM
--------------------------------------------------- */
-
-function buildForm(record = {}) {
-  const fields = document.getElementById("formFields");
-  fields.replaceChildren();
-
-  schemas[activeTable].forEach(([name,label,type]) => {
-    const wrapper = document.createElement("div");
-    const fieldLabel = document.createElement("label");
-    fieldLabel.textContent = label;
-    fieldLabel.htmlFor = "field_" + name;
-
-    let input;
-
-    if (type === "textarea") {
-      input = document.createElement("textarea");
-    } else {
-      input = document.createElement("input");
-      input.type = type;
-    }
-
-    input.id = "field_" + name;
-    input.name = name;
-    input.value = safeValue(record[name]);
-
-    if (name === "remaining_balance" && activeTable === "finance") {
-      input.readOnly = true;
-      input.title = "Calculated automatically";
-    }
-
-    if (activeTable === "activity_log" && name === "date" && !record[name]) {
-      input.value = new Date().toISOString().slice(0,10);
-    }
-
-    wrapper.append(fieldLabel,input);
-    fields.appendChild(wrapper);
-  });
-
-  if (activeTable === "finance") {
-    const agreed = document.getElementById("field_agreed_amount");
-    const received = document.getElementById("field_amount_received");
-    const remaining = document.getElementById("field_remaining_balance");
-
-    function calculateBalance() {
-      const a = Number(agreed.value || 0);
-      const r = Number(received.value || 0);
-      remaining.value = Math.max(0, a-r).toFixed(2);
-    }
-
-    agreed.addEventListener("input",calculateBalance);
-    received.addEventListener("input",calculateBalance);
-    calculateBalance();
-  }
-}
-
-function openAddForm() {
-  editingId = null;
-  document.getElementById("formTitle").textContent = "Add " + titles[activeTable] + " Record";
-  document.getElementById("saveButton").textContent = "Save Record";
-  buildForm();
-  setMessage(formMessage,"");
-  document.getElementById("recordForm").style.display = "block";
-  document.getElementById("recordForm").scrollIntoView({behavior:"smooth"});
-}
-
-function openEditForm(record) {
-  if (record.id === undefined || record.id === null) {
-    setMessage(sectionMessage,"This table needs an id column to edit records.");
-    return;
+  if(editingId!==null){
+   result=await db.from(activeTable)
+    .update(record).eq("id",editingId);
+  }else{
+   record.owner_id=currentUser.id;
+   result=await db.from(activeTable).insert(record);
   }
 
-  editingId = record.id;
-  document.getElementById("formTitle").textContent = "Edit " + titles[activeTable] + " Record";
-  document.getElementById("saveButton").textContent = "Update Record";
-  buildForm(record);
-  setMessage(formMessage,"");
-  document.getElementById("recordForm").style.display = "block";
-  document.getElementById("recordForm").scrollIntoView({behavior:"smooth"});
-}
+  if(result.error)throw result.error;
 
-function closeForm() {
-  document.getElementById("recordForm").style.display = "none";
-  document.getElementById("dataForm").reset();
-  editingId = null;
-}
-
-/* --------------------------------------------------
-   SAVE / UPDATE RECORD
--------------------------------------------------- */
-
-document.getElementById("dataForm").addEventListener("submit", async event => {
-  event.preventDefault();
-
-  if (!navigator.onLine) {
-    setMessage(formMessage,"You are offline. Connect to the internet before saving.");
-    return;
-  }
-
-  if (busy) return;
-  setBusy(true);
-  setMessage(formMessage,"Saving...");
-
-  try {
-    const record = {};
-
-    schemas[activeTable].forEach(([name]) => {
-      const input = document.getElementById("field_" + name);
-      let value = input.value.trim();
-
-      if (value === "") value = null;
-
-      if (["agreed_price","agreed_amount","amount_received","remaining_balance"].includes(name)) {
-        value = value === null ? null : Number(value);
-      }
-
-      record[name] = value;
-    });
-
-    if (activeTable === "finance") {
-      record.remaining_balance = Math.max(
-        0,
-        Number(record.agreed_amount || 0) -
-        Number(record.amount_received || 0)
-      );
-    }
-
-    let result;
-
-    if (editingId !== null) {
-      result = await db
-        .from(activeTable)
-        .update(record)
-        .eq("id",editingId);
-    } else {
-      record.owner_id = currentUser.id;
-      result = await db
-        .from(activeTable)
-        .insert(record);
-    }
-
-    if (result.error) throw result.error;
-
-    closeForm();
-    setMessage(sectionMessage,"Record saved successfully.",true);
-    await loadRecords(activeTable);
-    await loadCounts();
-
-  } catch (error) {
-    console.error("Save error:",error);
-    setMessage(formMessage,"Could not save: " + error.message);
-  } finally {
-    setBusy(false);
-  }
-});
-
-/* --------------------------------------------------
-   DELETE RECORD
--------------------------------------------------- */
-
-async function deleteRecord(record) {
-  if (record.id === undefined || record.id === null) {
-    setMessage(sectionMessage,"This table needs an id column to delete records.");
-    return;
-  }
-
-  if (!confirm("Delete this record? This action cannot be undone.")) return;
-
-  if (!navigator.onLine) {
-    setMessage(sectionMessage,"Connect to the internet before deleting records.");
-    return;
-  }
-
-  sectionMessage.textContent = "Deleting...";
-
-  const { error } = await db
-    .from(activeTable)
-    .delete()
-    .eq("id",record.id);
-
-  if (error) {
-    console.error("Delete error:",error);
-    sectionMessage.textContent = "Could not delete: " + error.message;
-    return;
-  }
-
-  sectionMessage.textContent = "Record deleted.";
+  closeForm();
+  notice($("sectionMessage"),"Record saved successfully.",true);
   await loadRecords(activeTable);
   await loadCounts();
+
+ }catch(error){
+  console.error(error);
+  notice($("formMessage"),"Save failed: "+error.message);
+ }finally{
+  setBusy(false);
+ }
+});
+
+/* DELETE */
+async function deleteRecord(record){
+ if(record.id===undefined||record.id===null){
+  notice($("sectionMessage"),"This table needs an id column.");
+  return;
+ }
+
+ if(!confirm("Are you sure you want to delete this record?"))return;
+
+ if(!navigator.onLine){
+  notice($("sectionMessage"),"Internet connection required.");
+  return;
+ }
+
+ notice($("sectionMessage"),"Deleting...");
+
+ const {error}=await db.from(activeTable)
+  .delete().eq("id",record.id);
+
+ if(error){
+  notice($("sectionMessage"),"Delete failed: "+error.message);
+  return;
+ }
+
+ await loadRecords(activeTable);
+ await loadCounts();
 }
 
-/* --------------------------------------------------
-   LOGIN / LOGOUT
--------------------------------------------------- */
+/* LOGIN */
+$("loginForm").addEventListener("submit",async event=>{
+ event.preventDefault();
 
-document.getElementById("loginForm").addEventListener("submit",async event => {
-  event.preventDefault();
+ if(!db){
+  notice($("message"),"Supabase library did not load. Reload with internet.");
+  return;
+ }
 
-  if (!db) {
-    setMessage(message,"Supabase library did not load. Check your internet connection and reload.");
-    return;
-  }
+ if(!navigator.onLine){
+  notice($("message"),"Internet connection required to sign in.");
+  return;
+ }
 
-  if (!navigator.onLine) {
-    setMessage(message,"Internet connection required to sign in.");
-    return;
-  }
+ if(busy)return;
 
-  setBusy(true);
-  setMessage(message,"Signing in...");
+ setBusy(true);
+ notice($("message"),"Signing in...");
 
-  try {
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value;
+ try{
+  const email=$("email").value.trim();
+  const password=$("password").value;
 
-    const {data,error} = await db.auth.signInWithPassword({email,password});
+  const {data,error}=await db.auth.signInWithPassword({email,password});
 
-    if (error) throw error;
+  if(error)throw error;
+  if(!data.session||!data.user)throw new Error("No login session was returned.");
 
-    if (data.user) {
-      setMessage(message,"Login successful.",true);
-    }
-  } catch(error) {
-    console.error("Login error:",error);
-    setMessage(message,"Login failed: " + error.message);
-  } finally {
-    setBusy(false);
-  }
+  /* Explicitly open the dashboard after successful login. */
+  showApp(data.user);
+  notice($("message"),"");
+  await loadCounts();
+  await showSection("overview");
+
+ }catch(error){
+  console.error("Login error:",error);
+  notice($("message"),"Login failed: "+error.message);
+ }finally{
+  setBusy(false);
+ }
 });
 
-document.getElementById("logoutButton").addEventListener("click",async () => {
-  const {error} = await db.auth.signOut();
-  if (error) {
-    alert("Could not log out: " + error.message);
-  }
+/* LOGOUT */
+$("logoutButton").addEventListener("click",async()=>{
+ const {error}=await db.auth.signOut();
+
+ if(error){
+  alert("Logout failed: "+error.message);
+ }
 });
 
-document.getElementById("refreshButton").addEventListener("click",async () => {
-  if (!navigator.onLine) {
-    document.getElementById("connectionStatus").textContent =
-  
+/* REFRESH */
+$("refreshButton").addEventListener("click",async()=>{
+ if(!navigator.onLine){
+  updateConnection();
+  return;
+ }
+
+ await loadCounts();
+ if(activeTable!=="overview")await loadRecords(activeTable);
+ updateConnection();
+});
+
+/* BUTTONS */
+$("addButton").addEventListener("click",openAddForm);
+$("cancelButton").addEventListener("click",closeForm);
+
+document.querySelectorAll("#menu button").forEach(button=>{
+ button.addEventListener("click",()=>showSection(button.dataset.table));
+});
+
+/* AUTH LISTENER
+   Do not run database queries inside this callback.
+*/
+db?.auth.onAuthStateChange((event,session)=>{
+ if(event==="SIGNED_OUT"){
+  currentUser=null;
+  showLogin();
+ }
+});
+
+/* INITIAL SESSION CHECK */
+async function startApp(){
+ if(!db){
+  notice($("message"),"Supabase library failed to load. Check internet and reload.");
+  return;
+ }
+
+ try{
+  const {data,error}=await db.auth.getSession();
+  if(error)throw error;
+
+  if(data.session){
+   showApp(data.session.user);
+   await loadCounts();
+   await showSection("overview");
+  }else{
+   showLogin();
+  }
+ }catch(error){
+  console.error("Session error:",error);
+  showLogin();
+  notice($("message"),"Session error: "+error.message);
+ }
+}
+
+/* INTERNET STATUS */
+window.addEventListener("online",updateConnection);
+window.addEventListener("offline",updateConnection);
+
+/* SERVICE WORKER */
+if("serviceWorker" in navigator){
+ window.addEventListener("load",()=>{
+  navigator.serviceWorker.register("./sw.js")
+   .catch(error=>console.error("Service worker:",error));
+ });
+}
+
+startApp();
+</script>
+</body>
+</html>
